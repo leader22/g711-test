@@ -8,7 +8,7 @@ import visualizeStream from "./visualize-stream.js";
     const audioContext = new AudioContext({ sampleRate: 8000 });
     console.warn(audioContext.sampleRate);
     await audioContext.audioWorklet.addModule('./src/g711-processor.js');
-    await audioContext.audioWorklet.addModule('./src/bypass-processor.js');
+    // await audioContext.audioWorklet.addModule('./src/bypass-processor.js');
 
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
