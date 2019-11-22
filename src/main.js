@@ -32,15 +32,16 @@ import visualizeStream from "./visualize-stream.js";
     visualizeStream(compNode, $compressed, { audioContext, fftSize });
 
     // run pipeline
-    sourceNode.connect(filterNode);
-    filterNode.connect(compNode);
-    compNode.connect(audioContext.destination);
+    sourceNode
+      .connect(filterNode)
+      .connect(compNode)
+      .connect(audioContext.destination);
 
     // debug
-    // setTimeout(() => {
-    //   sourceNode.disconnect();
-    //   filterNode.disconnect();
-    //   compNode.disconnect();
-    // }, 1000);
+    setTimeout(() => {
+      sourceNode.disconnect();
+      filterNode.disconnect();
+      compNode.disconnect();
+    }, 1000);
   };
 })().catch(console.error);
