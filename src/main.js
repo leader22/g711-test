@@ -20,7 +20,6 @@ import visualizeStream from "./visualize-stream.js";
     //                            --> compander -> visualizer(for compressed)
     const sourceNode = new MediaStreamAudioSourceNode(audioContext, { mediaStream: stream });
     const filterNode = new BiquadFilterNode(audioContext, { type: "lowpass" });
-
     // compand
     const compNode = new AudioWorkletNode(audioContext, 'g711-processor');
     // const compNode = new AudioWorkletNode(audioContext, 'bypass-processor');
@@ -35,11 +34,12 @@ import visualizeStream from "./visualize-stream.js";
     // run pipeline
     sourceNode.connect(filterNode);
     filterNode.connect(compNode);
+    compNode.connect(audioContext.destination);
 
     // debug
-    compNode.connect(audioContext.destination);
     // setTimeout(() => {
     //   sourceNode.disconnect();
+    //   filterNode.disconnect();
     //   compNode.disconnect();
     // }, 1000);
   };

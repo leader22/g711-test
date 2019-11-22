@@ -1,9 +1,4 @@
 import { encode, decode } from "./g711.js";
-// import { encodeSample, decodeSample } from "./g711.js";
-// encode(Int16Array) => Uint8Array
-// encodeSample(16bit) => 8bit
-// decodeSample(8bit) => 16bit
-// decode(Uint8Array) => Int16Array
 
 function float32ToInt16(buffer) {
   let l = buffer.length;
@@ -35,7 +30,9 @@ class G711Processor extends AudioWorkletProcessor {
       const original = input[channel];
       const i16 = float32ToInt16(original);
       const encoded = encode(i16);
-      // ++++++++++++++ Networking ++++++++++++++++++
+
+      // TODO: networking here
+
       const decoded = decode(encoded);
       const f32 = int16ToFloat32(decoded);
       output[channel].set(f32);
