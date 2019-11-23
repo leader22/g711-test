@@ -4,9 +4,14 @@ class BypassProcessor extends AudioWorkletProcessor {
     const output = outputs[0];
 
     for (let channel = 0; channel < output.length; ++channel) {
-      for (let i = 0; i < output[channel].length; ++i) {
-        output[channel][i] = input[channel][i];
-      }
+      // TODO: should send 1 channel?
+      this.port.postMessage(input[channel]);
+
+      // for (let i = 0; i < output[channel].length; ++i) {
+      //   output[channel][i] = input[channel][i];
+      // }
+      // same
+      output[channel].set(input[channel]);
     }
 
     return true;

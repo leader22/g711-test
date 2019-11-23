@@ -1,4 +1,6 @@
 export default (sourceNode, $canvas, { audioContext, fftSize }) => {
+  fftSize = fftSize || 1024;
+
   const analyserNode = new AnalyserNode(audioContext, { fftSize });
   sourceNode.connect(analyserNode);
 
