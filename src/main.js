@@ -46,10 +46,4 @@ async function runSender(is_g711, $original, $compressed, sender) {
   let compressedAnalyserNode = visualizeStream(node, $compressed, { audioContext });
   compressedAnalyserNode
     .connect(audioContext.destination);
-
-  // debug
-  // setTimeout(() => {
-  //   sourceNode.disconnect();
-  //   compNode.disconnect();
-  // }, 1000);
 }
