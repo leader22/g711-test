@@ -1,18 +1,21 @@
 import visualizeStream from "./visualize-stream.js";
 
 (async () => {
-  const [$bypassButton, $g711Button] = document.querySelectorAll("button");
+  const [$bypassButton, $g711Button, $lowpassButton] = document.querySelectorAll("button");
   const [$original, $compressed] = document.querySelectorAll("canvas");
 
   $bypassButton.onclick = async () => {
-    await runSender(false, $original, $compressed, new BroadcastChannel("audio"));
+    await runSender(0, $original, $compressed, new BroadcastChannel("audio"));
   };
   $g711Button.onclick = async () => {
-    await runSender(true, $original, $compressed, new BroadcastChannel("audio"));
+    await runSender(1, $original, $compressed, new BroadcastChannel("audio"));
+  };
+  $lowpassButton.onclick = async () => {
+    await runSender(2, $original, $compressed, new BroadcastChannel("audio"));
   };
 })().catch(console.error);
 
-async function runSender(is_g711, $original, $compressed, sender) {
+async function runSender(selector, $original, $compressed, sender) {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
   // G.711 requires 8000Hz
@@ -22,6 +25,7 @@ async function runSender(is_g711, $original, $compressed, sender) {
   await audioContext.audioWorklet.addModule('./src/bypass-processor.js');
   await audioContext.audioWorklet.addModule('./src/g711-encode-processor.js');
   await audioContext.audioWorklet.addModule('./src/g711-decode-processor.js');
+  await audioContext.audioWorklet.addModule('./src/lowpass-processor.js');
 
   const sourceNode = new MediaStreamAudioSourceNode(audioContext, { mediaStream: stream });
   // stereo, sampleRate: 8000
@@ -29,21 +33,28 @@ async function runSender(is_g711, $original, $compressed, sender) {
 
   // compand
   const bypassNode = new AudioWorkletNode(audioContext, 'bypass-processor');
+  const lowpassNode = new AudioWorkletNode(audioContext, 'lowpass-processor');
   const g711EncodeNode = new AudioWorkletNode(audioContext, 'g711-encode-processor');
   const g711DecodeNode = new AudioWorkletNode(audioContext, 'g711-decode-processor');
 
   // run pipeline
-  let node;
-  if(is_g711){
-    node = originalAnalyserNode
-        .connect(g711EncodeNode)
-        .connect(g711DecodeNode);
-  } else {
-    node = originalAnalyserNode
-        .connect(bypassNode);
+  let processedNode;
+  switch (selector) {
+    case 1:
+      processedNode = originalAnalyserNode
+          .connect(g711EncodeNode)
+          .connect(g711DecodeNode);
+      break;
+    case 2:
+      processedNode = originalAnalyserNode
+          .connect(lowpassNode);
+      break;
+    default:
+      processedNode = originalAnalyserNode
+          .connect(bypassNode);
   }
 
-  let compressedAnalyserNode = visualizeStream(node, $compressed, { audioContext });
+  let compressedAnalyserNode = visualizeStream(processedNode, $compressed, { audioContext });
   compressedAnalyserNode
     .connect(audioContext.destination);
 }
