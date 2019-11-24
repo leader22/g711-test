@@ -9,7 +9,6 @@ class LowPassProcessor extends AudioWorkletProcessor {
     const output = outputs[0];
     const k = 0.1;
 
-    console.log("lowpass");
     if(this.lastPlf.length === 0) {
       this.lastPlf = new Array(input.length).fill(0.0);
     }
