@@ -1,15 +1,18 @@
 import visualizeStream from "./visualize-stream.js";
 
 (async () => {
-  const $capture = document.querySelector("button");
+  const [$bypassButton, $g711Button] = document.querySelectorAll("button");
   const [$original, $compressed] = document.querySelectorAll("canvas");
 
-  $capture.onclick = async () => {
-    await runSender($original, $compressed, new BroadcastChannel("audio"));
+  $bypassButton.onclick = async () => {
+    await runSender(false, $original, $compressed, new BroadcastChannel("audio"));
+  };
+  $g711Button.onclick = async () => {
+    await runSender(true, $original, $compressed, new BroadcastChannel("audio"));
   };
 })().catch(console.error);
 
-async function runSender($original, $compressed, sender) {
+async function runSender(is_g711, $original, $compressed, sender) {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
   // G.711 requires 8000Hz
@@ -30,9 +33,15 @@ async function runSender($original, $compressed, sender) {
   const g711DecodeNode = new AudioWorkletNode(audioContext, 'g711-decode-processor');
 
   // run pipeline
-  let node = originalAnalyserNode
-      .connect(g711EncodeNode)
-      .connect(g711DecodeNode);
+  let node;
+  if(is_g711){
+    node = originalAnalyserNode
+        .connect(g711EncodeNode)
+        .connect(g711DecodeNode);
+  } else {
+    node = originalAnalyserNode
+        .connect(bypassNode);
+  }
 
   let compressedAnalyserNode = visualizeStream(node, $compressed, { audioContext });
   compressedAnalyserNode
