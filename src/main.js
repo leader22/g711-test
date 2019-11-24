@@ -1,6 +1,4 @@
 import visualizeStream from "./visualize-stream.js";
-import { encode, decode } from "./g711.js";
-import { float32ToInt16, int16ToFloat32 } from "./array.js";
 
 (async () => {
   const $capture = document.querySelector("button");
@@ -19,30 +17,24 @@ async function runSender($original, $compressed, sender) {
   console.log("sender:", audioContext.sampleRate);
 
   await audioContext.audioWorklet.addModule('./src/bypass-processor.js');
+  await audioContext.audioWorklet.addModule('./src/g711-encode-processor.js');
+  await audioContext.audioWorklet.addModule('./src/g711-decode-processor.js');
 
   const sourceNode = new MediaStreamAudioSourceNode(audioContext, { mediaStream: stream });
   // stereo, sampleRate: 8000
   let originalAnalyserNode = visualizeStream(sourceNode, $original, { audioContext });
 
   // compand
-  const compNode = new AudioWorkletNode(audioContext, 'bypass-processor');
-  compNode.port.onmessage = ({ data }) => {
-    // netwoking shim
-    const delay = Math.random() * 10;
-
-    // send original f32
-    // setTimeout(() => sender.postMessage(data), delay);
-
-    const i16 = float32ToInt16(data);
-    const encoded = encode(i16);
-    setTimeout(() => sender.postMessage(encoded), delay);
-  };
+  const bypassNode = new AudioWorkletNode(audioContext, 'bypass-processor');
+  const g711EncodeNode = new AudioWorkletNode(audioContext, 'g711-encode-processor');
+  const g711DecodeNode = new AudioWorkletNode(audioContext, 'g711-decode-processor');
 
   // run pipeline
-  originalAnalyserNode
-    .connect(compNode);
+  let node = originalAnalyserNode
+      .connect(g711EncodeNode)
+      .connect(g711DecodeNode);
 
-  let compressedAnalyserNode = visualizeStream(compNode, $compressed, { audioContext });
+  let compressedAnalyserNode = visualizeStream(node, $compressed, { audioContext });
   compressedAnalyserNode
     .connect(audioContext.destination);
 

@@ -2,7 +2,6 @@ export default (sourceNode, $canvas, { audioContext, fftSize }) => {
   fftSize = fftSize || 1024;
 
   const analyserNode = new AnalyserNode(audioContext, { fftSize });
-  sourceNode.connect(analyserNode);
 
   const drawContext = $canvas.getContext('2d');
   $canvas.width = getComputedStyle($canvas).width.slice(0, -2);
@@ -27,5 +26,5 @@ export default (sourceNode, $canvas, { audioContext, fftSize }) => {
   }
 
   //get analyserNode to chain
-  return analyserNode;
+  return sourceNode.connect(analyserNode);
 };
