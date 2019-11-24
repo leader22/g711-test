@@ -25,4 +25,7 @@ export default (sourceNode, $canvas, { audioContext, fftSize }) => {
       drawContext.fillRect(i * barWidth, offset, barWidth + 1, height);
     }
   }
+
+  //get analyserNode to chain
+  return analyserNode;
 };
