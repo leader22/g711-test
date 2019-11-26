@@ -5,17 +5,17 @@ import visualizeStream from "./visualize-stream.js";
   const [$original, $compressed] = document.querySelectorAll("canvas");
 
   $bypassButton.onclick = async () => {
-    await runSender(0, $original, $compressed, new BroadcastChannel("audio"));
+    await runSender("bypass", $original, $compressed);
   };
   $g711Button.onclick = async () => {
-    await runSender(1, $original, $compressed, new BroadcastChannel("audio"));
+    await runSender("g711", $original, $compressed);
   };
   $lowpassButton.onclick = async () => {
-    await runSender(2, $original, $compressed, new BroadcastChannel("audio"));
+    await runSender("lowpass", $original, $compressed);
   };
 })().catch(console.error);
 
-async function runSender(selector, $original, $compressed, sender) {
+async function runSender(selector, $original, $compressed) {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
   // G.711 requires 8000Hz
@@ -29,7 +29,7 @@ async function runSender(selector, $original, $compressed, sender) {
 
   const sourceNode = new MediaStreamAudioSourceNode(audioContext, { mediaStream: stream });
   // stereo, sampleRate: 8000
-  let originalAnalyserNode = visualizeStream(sourceNode, $original, { audioContext });
+  const originalAnalyserNode = visualizeStream(sourceNode, $original, { audioContext });
 
   // compand
   const bypassNode = new AudioWorkletNode(audioContext, 'bypass-processor');
@@ -40,21 +40,26 @@ async function runSender(selector, $original, $compressed, sender) {
   // run pipeline
   let processedNode;
   switch (selector) {
-    case 1:
+    case "g711":
+      // source -> analyser -> g711Encode -> g711Decode
       processedNode = originalAnalyserNode
           .connect(g711EncodeNode)
           .connect(g711DecodeNode);
       break;
-    case 2:
+    case "lowpass":
+      // source -> analyser -> lowpass
       processedNode = originalAnalyserNode
           .connect(lowpassNode);
       break;
-    default:
+    case "bypass":
+      // source -> analyser -> bypass
       processedNode = originalAnalyserNode
           .connect(bypassNode);
   }
+  console.log(selector);
 
-  let compressedAnalyserNode = visualizeStream(processedNode, $compressed, { audioContext });
+  // -> analyser -> destination
+  const compressedAnalyserNode = visualizeStream(processedNode, $compressed, { audioContext });
   compressedAnalyserNode
     .connect(audioContext.destination);
 }
