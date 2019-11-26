@@ -1,27 +1,31 @@
 class LowPassProcessor extends AudioWorkletProcessor {
   constructor() {
     super();
-    this.lastPlf = [];
+    // for moving average, for each channel
+    this.lastValue = [];
   }
 
   process(inputs, outputs) {
     const input = inputs[0];
     const output = outputs[0];
-    const k = 0.1;
-
-    if(this.lastPlf.length === 0) {
-      this.lastPlf = new Array(input.length).fill(0.0);
-    }
 
     for (let channel = 0; channel < output.length; ++channel) {
        for (let i = 0; i < output[channel].length; ++i) {
-         output[channel][i] = (1 - k) * this.lastPlf[channel] + k * input[channel][i];
-         this.lastPlf[channel] = output[channel][i];
+         const cur = input[channel][i];
+         const last = this.lastValue[channel] || 0;
+
+         // 移動平均
+         const v = movingAverage(last, cur);
+         output[channel][i] = this.lastValue[channel] = v;
        }
     }
 
     return true;
   }
+}
+
+function movingAverage(a, b, k = 0.1) {
+  return (1 - k) * a + k * b;
 }
 
 registerProcessor('lowpass-processor', LowPassProcessor);
