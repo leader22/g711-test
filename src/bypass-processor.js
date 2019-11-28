@@ -1,15 +1,11 @@
 class BypassProcessor extends AudioWorkletProcessor {
-  process(inputs, outputs) {
-    const [input] = inputs;
-    const [output] = outputs;
+  process(inputs) {
+    const [[leftChannel]] = inputs;
 
     // bypass everything
-    this.port.postMessage(input[0]);
+    this.port.postMessage(leftChannel);
 
-    // discard outputs
-    for (let channel = 0; channel < output.length; ++channel) {
-      output[channel].set(new Float32Array(input[channel.length]));
-    }
+    // nothing to produce as outputs
 
     return true;
   }

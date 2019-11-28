@@ -16,7 +16,7 @@ export async function sendBypass($canvas, sender) {
   const compNode = new AudioWorkletNode(audioContext, 'bypass-processor');
   compNode.port.onmessage = ({ data }) => {
     // netwoking shim
-    const delay = Math.random() * 0;
+    const delay = Math.random() * 10;
 
     // send original f32
     setTimeout(() => sender.postMessage(data), delay);
