@@ -8,29 +8,28 @@ export async function sendBypass($canvas, sender) {
   const audioContext = new AudioContext();
   console.log("sender:", audioContext.sampleRate);
 
-  await audioContext.audioWorklet.addModule('./src/bypass-processor.js');
+  await audioContext.audioWorklet.addModule('./src/send-processor.js');
 
   const sourceNode = new MediaStreamAudioSourceNode(audioContext, { mediaStream: stream });
-  visualizeStream(sourceNode, $canvas, { audioContext });
+  const lowpassNode = new BiquadFilterNode(audioContext, { type: "lowpass" });
 
-  const compNode = new AudioWorkletNode(audioContext, 'bypass-processor');
-  compNode.port.onmessage = ({ data }) => {
+  const sendNode = new AudioWorkletNode(audioContext, 'send-processor');
+  sendNode.port.onmessage = ({ data }) => {
     // netwoking shim
-    const delay = Math.random() * 10;
-
-    // send original f32
-    setTimeout(() => sender.postMessage(data), delay);
+    setTimeout(() => sender.postMessage(data), Math.random() * 0);
   };
 
   // run pipeline
   sourceNode
-    .connect(compNode)
+    .connect(lowpassNode)
+    .connect(sendNode)
     .connect(audioContext.destination);
+  visualizeStream(lowpassNode, $canvas, { audioContext });
 
   // debug
   // setTimeout(() => {
   //   sourceNode.disconnect();
-  //   compNode.disconnect();
+  //   sendNode.disconnect();
   // }, 1000);
 }
 
@@ -41,15 +40,15 @@ export async function sendG711($canvas, sender) {
   const audioContext = new AudioContext({ sampleRate: 8000 });
   console.log("sender:", audioContext.sampleRate);
 
-  await audioContext.audioWorklet.addModule('./src/bypass-processor.js');
+  await audioContext.audioWorklet.addModule('./src/send-processor.js');
 
   const sourceNode = new MediaStreamAudioSourceNode(audioContext, { mediaStream: stream });
   // stereo, sampleRate: 8000
   visualizeStream(sourceNode, $canvas, { audioContext });
 
   // compand
-  const compNode = new AudioWorkletNode(audioContext, 'bypass-processor');
-  compNode.port.onmessage = ({ data }) => {
+  const sendNode = new AudioWorkletNode(audioContext, 'send-processor');
+  sendNode.port.onmessage = ({ data }) => {
     // netwoking shim
     const delay = Math.random() * 10;
 
@@ -66,13 +65,13 @@ export async function sendG711($canvas, sender) {
 
   // run pipeline
   sourceNode
-    .connect(compNode)
+    .connect(sendNode)
     .connect(gainNode)
     .connect(audioContext.destination);
 
   // debug
   // setTimeout(() => {
   //   sourceNode.disconnect();
-  //   compNode.disconnect();
+  //   sendNode.disconnect();
   // }, 1000);
 }

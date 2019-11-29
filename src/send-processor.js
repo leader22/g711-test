@@ -1,4 +1,4 @@
-class BypassProcessor extends AudioWorkletProcessor {
+class SendProcessor extends AudioWorkletProcessor {
   process(inputs) {
     const [[leftChannel]] = inputs;
 
@@ -11,4 +11,4 @@ class BypassProcessor extends AudioWorkletProcessor {
   }
 }
 
-registerProcessor('bypass-processor', BypassProcessor);
+registerProcessor('send-processor', SendProcessor);
