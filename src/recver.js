@@ -11,9 +11,8 @@ export function recvBypass($canvas, recver) {
 
   visualizeStream(gainNode, $canvas, { audioContext });
 
+  let startTime = 0;
   recver.onmessage = ({ data }) => {
-    // console.log("recv byte", data.buffer.byteLength);
-
     const audioBuffer = new AudioBuffer({
       numberOfChannels: 1,
       length: data.length,
@@ -26,7 +25,15 @@ export function recvBypass($canvas, recver) {
     sourceNode.connect(gainNode);
 
     sourceNode.onended = () => sourceNode.disconnect();
-    sourceNode.start(0); // should care network delay by queuing
+
+    const currentTime = audioContext.currentTime;
+    if (currentTime < startTime) {
+      sourceNode.start(startTime);
+      startTime += audioBuffer.duration;
+    } else {
+      sourceNode.start(currentTime);
+      startTime = currentTime + audioBuffer.duration;
+    }
   };
 }
 

@@ -16,7 +16,7 @@ export async function sendBypass($canvas, sender) {
   const sendNode = new AudioWorkletNode(audioContext, 'send-processor');
   sendNode.port.onmessage = ({ data }) => {
     // netwoking shim
-    setTimeout(() => sender.postMessage(data), Math.random() * 0);
+    setTimeout(() => sender.postMessage(data), 100);
   };
 
   // run pipeline
