@@ -1,19 +1,15 @@
-import { sendBypass, sendG711 } from "./sender.js";
-import { recvBypass, recvG711 } from "./recver.js";
+import { sendBypass } from "./sender.js";
+import { recvBypass } from "./recver.js";
 
 (async () => {
-  const [$bypass, $g711] = document.querySelectorAll("button");
-  const [$original, $compressed] = document.querySelectorAll("canvas");
+  const [$bypass] = document.querySelectorAll("button");
+  const [$before, $after] = document.querySelectorAll("canvas");
 
   $bypass.onclick = async () => {
-    console.log("run: bypass");
-    await sendBypass($original, new BroadcastChannel("audio"));
-    recvBypass($compressed, new BroadcastChannel("audio"));
-  };
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-  $g711.onclick = async () => {
-    console.log("run: g711");
-    await sendG711($original, new BroadcastChannel("audio"));
-    recvG711($compressed, new BroadcastChannel("audio"));
+    console.log("run: bypass");
+    sendBypass(stream, $before, new BroadcastChannel("audio"));
+    recvBypass($after, new BroadcastChannel("audio"));
   };
 })().catch(console.error);
