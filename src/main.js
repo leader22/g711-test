@@ -8,8 +8,9 @@ import { recvBypass } from "./recver.js";
   $bypass.onclick = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-    console.log("run: bypass");
-    await sendBypass(stream, $before);
-    await recvBypass($after, new BroadcastChannel("audio"));
+    const sampleRate = 8000 * 6;
+    console.log("run: bypass sampleRate =", sampleRate);
+    await sendBypass(stream, $before, sampleRate);
+    await recvBypass($after, sampleRate);
   };
 })().catch(console.error);

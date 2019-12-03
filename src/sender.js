@@ -1,12 +1,11 @@
 import * as Comlink from "https://unpkg.com/comlink/dist/esm/comlink.mjs";
 import visualizeStream from "./visualize-stream.js";
 
-export async function sendBypass(mediaStream, $canvas) {
+export async function sendBypass(mediaStream, $canvas, sampleRate) {
   const Sender = Comlink.wrap(new Worker("./src/worker/sender.js"));
   const sender = await new Sender("audio");
 
-  const audioContext = new AudioContext();
-  console.log("sender sampleRate:", audioContext.sampleRate);
+  const audioContext = new AudioContext({ sampleRate });
 
   const sourceNode = audioContext.createMediaStreamSource(mediaStream);
   const lowpassNode = audioContext.createBiquadFilter();

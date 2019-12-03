@@ -2,9 +2,8 @@ import * as Comlink from "https://unpkg.com/comlink/dist/esm/comlink.mjs";
 import visualizeStream from "./visualize-stream.js";
 import Player from "./player.js";
 
-export async function recvBypass($canvas) {
-  const audioContext = new AudioContext();
-  console.log("recver sampleRate:", audioContext.sampleRate);
+export async function recvBypass($canvas, sampleRate) {
+  const audioContext = new AudioContext({ sampleRate });
 
   const player = new Player(audioContext);
 

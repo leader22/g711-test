@@ -43,6 +43,8 @@ export default class PlayerNode {
 
     const data = this._queue.get(this._cur);
 
+    if (!data) return;
+
     outputBuffer.getChannelData(0).set(data);
     this._cur = (this._cur + 1) & (QUEUE_SIZE - 1);
   }
