@@ -9,7 +9,7 @@ import { recvBypass } from "./recver.js";
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
     console.log("run: bypass");
-    sendBypass(stream, $before, new BroadcastChannel("audio"));
-    recvBypass($after, new BroadcastChannel("audio"));
+    await sendBypass(stream, $before);
+    await recvBypass($after, new BroadcastChannel("audio"));
   };
 })().catch(console.error);
