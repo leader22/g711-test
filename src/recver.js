@@ -1,16 +1,21 @@
+import * as Comlink from "https://unpkg.com/comlink/dist/esm/comlink.mjs";
 import visualizeStream from "./visualize-stream.js";
 
-export function recvBypass($canvas, recver) {
-  const audioContext = new AudioContext();
-  console.log("recver:", audioContext.sampleRate);
+export async function recvBypass($canvas) {
+  const Recver = Comlink.wrap(new Worker("./src/worker/recver.js"));
+  const recver = await new Recver("audio");
+  // const recver = new Worker("./src/worker/recver.js");
 
-  const gainNode = new GainNode(audioContext, {});
+  const audioContext = new AudioContext();
+  console.log("recver sampleRate:", audioContext.sampleRate);
+
+  const gainNode = audioContext.createGain();
   gainNode.connect(audioContext.destination);
 
   visualizeStream(gainNode, $canvas, { audioContext });
 
   let startTime = 0;
-  recver.onmessage = ({ data }) => {
+  recver.onmessage = Comlink.proxy(data => {
     const audioBuffer = new AudioBuffer({
       numberOfChannels: 1,
       length: data.length,
@@ -19,9 +24,9 @@ export function recvBypass($canvas, recver) {
 
     audioBuffer.getChannelData(0).set(data);
 
-    const sourceNode = new AudioBufferSourceNode(audioContext, { buffer: audioBuffer });
+    const sourceNode = audioContext.createBufferSource();
+    sourceNode.buffer = audioBuffer;
     sourceNode.connect(gainNode);
-
     sourceNode.onended = () => sourceNode.disconnect();
 
     const currentTime = audioContext.currentTime;
@@ -32,5 +37,5 @@ export function recvBypass($canvas, recver) {
       sourceNode.start(currentTime);
       startTime = currentTime + audioBuffer.duration;
     }
-  };
+  });
 }

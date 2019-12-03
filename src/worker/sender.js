@@ -6,8 +6,13 @@ class Worker {
     this._ch = new BroadcastChannel(name);
   }
 
+  encode(data) {
+    return data;
+  }
+
   send(data) {
-    setTimeout(() => this._ch.postMessage(data), 100);
+    // shim networking
+    setTimeout(() => this._ch.postMessage(this.encode(data)), 100);
   }
 }
 

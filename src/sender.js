@@ -2,8 +2,8 @@ import * as Comlink from "https://unpkg.com/comlink/dist/esm/comlink.mjs";
 import visualizeStream from "./visualize-stream.js";
 
 export async function sendBypass(mediaStream, $canvas) {
-  const MyWorker = Comlink.wrap(new Worker("./src/worker.js"));
-  const worker = await new MyWorker("audio");
+  const Sender = Comlink.wrap(new Worker("./src/worker/sender.js"));
+  const sender = await new Sender("audio");
 
   const audioContext = new AudioContext();
   console.log("sender sampleRate:", audioContext.sampleRate);
@@ -18,7 +18,7 @@ export async function sendBypass(mediaStream, $canvas) {
     // Float32Array: auto size is 1024 by auto in Chrome
     const data = inputBuffer.getChannelData(0);
     // use Transferable
-    worker.send(Comlink.transfer(data, [data.buffer]));
+    sender.send(Comlink.transfer(data, [data.buffer]));
   };
 
   // run pipeline
