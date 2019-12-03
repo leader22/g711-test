@@ -4,7 +4,7 @@ export default (sourceNode, $canvas, { audioContext, fftSize }) => {
   const analyserNode = new AnalyserNode(audioContext, { fftSize });
   sourceNode.connect(analyserNode);
 
-  const drawContext = $canvas.getContext('2d');
+  const drawContext = $canvas.getContext("2d");
   $canvas.width = getComputedStyle($canvas).width.slice(0, -2);
 
   draw();
@@ -21,7 +21,7 @@ export default (sourceNode, $canvas, { audioContext, fftSize }) => {
       const height = $canvas.height * (freqs[i] / 255);
       const offset = $canvas.height - height;
       const barWidth = $canvas.width / fbc;
-      drawContext.fillStyle = `hsl(${(i / fbc * 360)}, 100%, 50%)`;
+      drawContext.fillStyle = `hsl(${(i / fbc) * 360}, 100%, 50%)`;
       drawContext.fillRect(i * barWidth, offset, barWidth + 1, height);
     }
   }
