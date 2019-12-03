@@ -1,4 +1,5 @@
-const THRESHOLD = 2;
+// start playing if queued over this
+const PLAY_THRESHOLD = 4;
 const QUEUE_SIZE = 16;
 
 export default class PlayerNode {
@@ -14,6 +15,8 @@ export default class PlayerNode {
     this._cur = 0;
     this._canDeq = false;
   }
+
+  get stat() { return { p: this._pos, c: this._cur } }
 
   startAsNode() {
     this._processor.onaudioprocess = this._process.bind(this);
@@ -33,7 +36,7 @@ export default class PlayerNode {
         ? this._pos - this._cur
         : (this._pos | 0x10) - this._cur;
 
-    if (delta > THRESHOLD) this._canDeq = true;
+    if (delta > PLAY_THRESHOLD) this._canDeq = true;
     if (this._canDeq && delta < 1) this._canDeq = false;
   }
 
