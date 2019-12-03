@@ -1,13 +1,21 @@
 importScripts("//unpkg.com/comlink/dist/umd/comlink.js");
-const { Comlink } = self;
+importScripts("./mu-law.js");
+const { Comlink, muLaw } = self;
 
 class Worker {
   constructor(name) {
     this._ch = new BroadcastChannel(name);
   }
 
-  encode(data) {
-    return data;
+  encode(input) {
+    const output = new Float32Array(input.length);
+
+    for (let i = 0; i < input.length; ++i) {
+      const v = input[i];
+      output[i] = muLaw.encode(v);
+    }
+
+    return output;
   }
 
   send(data) {

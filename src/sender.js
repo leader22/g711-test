@@ -33,5 +33,5 @@ export async function sendBypass(mediaStream, $canvas) {
   //   sourceNode.disconnect();
   //   lowpassNode.disconnect();
   //   sendNode.disconnect();
-  // }, 1000);
+  // }, 500);
 }

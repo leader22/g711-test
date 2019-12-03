@@ -16,8 +16,6 @@ export default class PlayerNode {
     this._canDeq = false;
   }
 
-  get stat() { return { p: this._pos, c: this._cur } }
-
   startAsNode() {
     this._processor.onaudioprocess = this._process.bind(this);
 
@@ -44,6 +42,7 @@ export default class PlayerNode {
     if (!this._canDeq) return;
 
     const data = this._queue.get(this._cur);
+
     outputBuffer.getChannelData(0).set(data);
     this._cur = (this._cur + 1) & (QUEUE_SIZE - 1);
   }
