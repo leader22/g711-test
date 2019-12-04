@@ -7,12 +7,52 @@ class Worker {
   constructor(name) {
     const ch = new BroadcastChannel(name);
     ch.onmessage = ({ data }) => {
-      const decoded = this.decode2(data);
+      const decoded = this.decode4(data);
       this.onmessage(Comlink.transfer(decoded, [decoded.buffer]));
     };
   }
 
-  // upsample by 2
+  decode4(srcArr) {
+    const mu = 127;
+    const mui = 1.0 / mu;
+
+    const l = srcArr.length;
+    const arr = new Float32Array(l * 2);
+
+    for (let i = 0; i < l; i++) {
+      const n = srcArr[i];
+      arr[i * 2] = _invMuLaw(n, mu, mui);
+
+      if (i > 0) {
+        arr[i * 2 - 1] = (arr[i * 2] + arr[i * 2 - 2]) / 2.0;
+      }
+    }
+    arr[l * 2 - 1] = arr[l * 2 - 2];
+
+    return arr;
+
+    function _invMuLaw(n, mu, mui) {
+      const sign = Math.sign(n);
+      const absN = Math.abs(n);
+
+      const f = absN * mui;
+      const s = sign * mui * (Math.pow(1 + mu, f) - 1);
+      return s;
+    }
+  }
+
+  decode3(input) {
+    const output = new Float32Array(input.length);
+
+    for (let i = 0; i < input.length; i++) {
+      const int = input[i];
+      const v = int >= 0x8000 ? -(0x10000 - int) / 0x8000 : int / 0x7fff;
+      output[i] = v;
+    }
+
+    return output;
+  }
+
   decode2(input) {
     const output = new Float32Array(input.length * 2);
 
