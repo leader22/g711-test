@@ -4,7 +4,7 @@ const QUEUE_SIZE = 16;
 
 export default class PlayerNode {
   constructor(audioContext) {
-    this._osc = audioContext.createOscillator();
+    this._source = audioContext.createConstantSource();
     this._processor = audioContext.createScriptProcessor(0, 1, 1);
 
     // Map<number, Float32Array>
@@ -19,8 +19,8 @@ export default class PlayerNode {
   startAsNode() {
     this._processor.onaudioprocess = this._process.bind(this);
 
-    this._osc.connect(this._processor);
-    this._osc.start();
+    this._source.connect(this._processor);
+    this._source.start();
 
     return this._processor;
   }
