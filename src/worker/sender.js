@@ -1,7 +1,6 @@
 importScripts("//unpkg.com/comlink/dist/umd/comlink.js");
 importScripts("./mu-law.js");
 const { Comlink, muLaw } = self;
-muLaw;
 
 class Worker {
   constructor(name) {
@@ -14,7 +13,18 @@ class Worker {
     }, 1000);
   }
 
-  // ganeko式
+  // nakakura: 48000hz x f32(512) + muLaw => 752kbps
+  encode5(input) {
+    const output = new Float32Array(input.length / 2);
+
+    for (let i = 0; i < input.length; i += 2) {
+      output[i / 2] = muLaw.encode(input[i]);
+    }
+
+    return output;
+  }
+
+  // ganeko: 48000hz x i8(512) + muLaw => 188kbps
   encode4(srcArr) {
     const mu = 127;
     const alpha = (1.0 / Math.log(1 + mu)) * mu;
@@ -39,7 +49,7 @@ class Worker {
     }
   }
 
-  // downdepth: f32 -> i16
+  // downdepth: 48000hz x i16(1024) => 752kbps
   encode3(input) {
     const output = new Int16Array(input.length);
 
@@ -52,31 +62,30 @@ class Worker {
     return output;
   }
 
-  // downsample: 1024 -> 512 sample
+  // downsample: 48000hz x f32(512) => 752kbps
   encode2(input) {
     const output = new Float32Array(input.length / 2);
 
     for (let i = 0; i < input.length; i += 2) {
-      const v = input[i];
-      output[i / 2] = v;
+      output[i / 2] = input[i];
     }
 
     return output;
   }
 
+  // default: 48000hz x f32(1024) => 1504kbps
   encode(input) {
     const output = new Float32Array(input.length);
 
     for (let i = 0; i < input.length; i++) {
-      const v = input[i];
-      output[i] = v;
+      output[i] =  input[i];
     }
 
     return output;
   }
 
   send(data) {
-    const encoded = this.encode4(data);
+    const encoded = this.encode(data);
     this._bytesSent += encoded.byteLength;
 
     // shim networking
