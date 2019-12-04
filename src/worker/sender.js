@@ -12,7 +12,7 @@ class Worker {
     }, 1000);
   }
 
-  // nakakura: 48000hz x f32(512) + muLaw => 752kbps
+  // nakakura: 24000hz x f32(512) + muLaw => 752kbps
   encode6(input) {
     const output = new Float32Array(input.length / 2);
 
@@ -29,7 +29,7 @@ class Worker {
     }
   }
 
-  // downsample+depth: 48000hz x i16(512) => 376kbps
+  // downsample+depth: 24000hz x i16(512) => 376kbps
   encode5(input) {
     const output = new Int16Array(input.length / 2);
 
@@ -41,7 +41,7 @@ class Worker {
     return output;
   }
 
-  // ganeko: 48000hz x i8(512) + muLaw => 188kbps
+  // ganeko: 24000hz x i8(512) + muLaw => 188kbps
   encode4(srcArr) {
     const l = srcArr.length;
     const arr = new Int8Array(l / 2);
@@ -74,7 +74,7 @@ class Worker {
     return output;
   }
 
-  // downsample: 48000hz x f32(512) => 752kbps
+  // downsample: 24000hz x f32(512) => 752kbps
   encode2(input) {
     const output = new Float32Array(input.length / 2);
 
