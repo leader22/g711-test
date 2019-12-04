@@ -1,6 +1,5 @@
 importScripts("//unpkg.com/comlink/dist/umd/comlink.js");
-importScripts("./mu-law.js");
-const { Comlink, muLaw } = self;
+const { Comlink } = self;
 
 class Worker {
   constructor(name) {
@@ -18,10 +17,16 @@ class Worker {
     const output = new Float32Array(input.length / 2);
 
     for (let i = 0; i < input.length; i += 2) {
-      output[i / 2] = muLaw.encode(input[i]);
+      output[i / 2] = muLawEncode(input[i]);
     }
 
     return output;
+
+    function muLawEncode(x) {
+      const MU = 255.0;
+      const LN_MU = Math.log(1 + MU);
+      return (Math.sign(x) * Math.log(1 + MU * Math.abs(x))) / LN_MU;
+    }
   }
 
   // downsample+depth: 48000hz x i16(512) => 376kbps
@@ -29,7 +34,8 @@ class Worker {
     const output = new Int16Array(input.length / 2);
 
     for (let i = 0; i < input.length; i += 2) {
-      output[i / 2] = Math.min(1, input[i]) * 0x7fff;
+      const v = Math.min(1, input[i]) * 0x7fff;
+      output[i / 2] = v;
     }
 
     return output;
@@ -37,26 +43,21 @@ class Worker {
 
   // ganeko: 48000hz x i8(512) + muLaw => 188kbps
   encode4(srcArr) {
-    const mu = 127;
-    const alpha = (1.0 / Math.log(1 + mu)) * mu;
-
     const l = srcArr.length;
     const arr = new Int8Array(l / 2);
 
     for (let i = 0; i < l; i += 2) {
       const s = srcArr[i];
-      const n = _muLaw(s, mu, alpha);
+      const n = _muLaw(s);
       arr[i / 2] = n;
     }
 
     return arr;
 
-    function _muLaw(s, mu, alpha) {
-      const sign = Math.sign(s);
-      const absS = Math.abs(s);
-
-      const n = sign * Math.log(1 + mu * absS) * alpha;
-      return n;
+    function _muLaw(s) {
+      const mu = 127;
+      const alpha = (1.0 / Math.log(1 + mu)) * mu;
+      return Math.sign(s) * Math.log(1 + mu * Math.abs(s)) * alpha;
     }
   }
 
@@ -89,14 +90,14 @@ class Worker {
     const output = new Float32Array(input.length);
 
     for (let i = 0; i < input.length; i++) {
-      output[i] =  input[i];
+      output[i] = input[i];
     }
 
     return output;
   }
 
   send(data) {
-    const encoded = this.encode5(data);
+    const encoded = this.encode(data);
     this._bytesSent += encoded.byteLength;
 
     // shim networking

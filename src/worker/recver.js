@@ -1,12 +1,11 @@
 importScripts("//unpkg.com/comlink/dist/umd/comlink.js");
-importScripts("./mu-law.js");
-const { Comlink, muLaw } = self;
+const { Comlink } = self;
 
 class Worker {
   constructor(name) {
     const ch = new BroadcastChannel(name);
     ch.onmessage = ({ data }) => {
-      const decoded = this.decode5(data);
+      const decoded = this.decode(data);
       this.onmessage(Comlink.transfer(decoded, [decoded.buffer]));
     };
   }
@@ -15,7 +14,7 @@ class Worker {
     const output = new Float32Array(input.length * 2);
 
     for (let i = 0; i < input.length; i++) {
-      const v = muLaw.decode(input[i]);
+      const v = muLawDecode(input[i]);
       const idx = i * 2;
 
       // even idx: fill value
@@ -29,6 +28,12 @@ class Worker {
     output[input.length * 2 - 1] = output[input.length * 2 - 2];
 
     return output;
+
+    function muLawDecode(y) {
+      const MU = 255.0;
+      const INV_MU = 1.0 / MU;
+      return Math.sign(y) * INV_MU * (Math.pow(1 + MU, Math.abs(y)) - 1);
+    }
   }
 
   decode5(input) {
@@ -54,15 +59,12 @@ class Worker {
   }
 
   decode4(srcArr) {
-    const mu = 127;
-    const mui = 1.0 / mu;
-
     const l = srcArr.length;
     const arr = new Float32Array(l * 2);
 
     for (let i = 0; i < l; i++) {
       const n = srcArr[i];
-      arr[i * 2] = _invMuLaw(n, mu, mui);
+      arr[i * 2] = _invMuLaw(n);
 
       if (i > 0) {
         arr[i * 2 - 1] = (arr[i * 2] + arr[i * 2 - 2]) / 2.0;
@@ -72,13 +74,10 @@ class Worker {
 
     return arr;
 
-    function _invMuLaw(n, mu, mui) {
-      const sign = Math.sign(n);
-      const absN = Math.abs(n);
-
-      const f = absN * mui;
-      const s = sign * mui * (Math.pow(1 + mu, f) - 1);
-      return s;
+    function _invMuLaw(n) {
+      const mu = 127;
+      const mui = 1.0 / mu;
+      return Math.sign(n) * mui * (Math.pow(1 + mu, Math.abs(n) * mui) - 1);
     }
   }
 
