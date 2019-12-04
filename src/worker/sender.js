@@ -36,7 +36,7 @@ class Worker {
   send(data) {
     // shim networking
     setTimeout(
-      () => this._ch.postMessage(this.encode(data)),
+      () => this._ch.postMessage(this.encode2(data)),
       Math.random() * 10
     );
   }

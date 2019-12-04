@@ -7,7 +7,7 @@ class Worker {
   constructor(name) {
     const ch = new BroadcastChannel(name);
     ch.onmessage = ({ data }) => {
-      const decoded = this.decode(data);
+      const decoded = this.decode2(data);
       this.onmessage(Comlink.transfer(decoded, [decoded.buffer]));
     };
   }
