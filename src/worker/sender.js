@@ -14,11 +14,22 @@ class Worker {
   }
 
   // nakakura: 48000hz x f32(512) + muLaw => 752kbps
-  encode5(input) {
+  encode6(input) {
     const output = new Float32Array(input.length / 2);
 
     for (let i = 0; i < input.length; i += 2) {
       output[i / 2] = muLaw.encode(input[i]);
+    }
+
+    return output;
+  }
+
+  // downsample+depth: 48000hz x i16(512) => 376kbps
+  encode5(input) {
+    const output = new Int16Array(input.length / 2);
+
+    for (let i = 0; i < input.length; i += 2) {
+      output[i / 2] = Math.min(1, input[i]) * 0x7fff;
     }
 
     return output;
@@ -85,7 +96,7 @@ class Worker {
   }
 
   send(data) {
-    const encoded = this.encode(data);
+    const encoded = this.encode5(data);
     this._bytesSent += encoded.byteLength;
 
     // shim networking
