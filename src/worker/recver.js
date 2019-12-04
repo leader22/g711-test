@@ -22,7 +22,6 @@ class Worker {
 
       // even idx: fill value
       output[idx] = v;
-
       if (i !== 0) {
         // odd idx: by average
         output[idx - 1] = (output[idx] + output[idx - 2]) / 2;
@@ -40,7 +39,6 @@ class Worker {
 
     for (let i = 0; i < input.length; i++) {
       const v = input[i];
-
       output[i] = v;
     }
 
